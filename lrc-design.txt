@@ -1,0 +1,46 @@
+1. State change
+	Paused:  Process entire lrc file, store into list
+	if error, report 
+	
+2. Property:
+	SongCode: entire song code without timestamp
+	Title: Lyrics Title 
+	Artist: Lyrics Artist
+	Album: song album
+	By: Creator of the LRC file
+	Re: the player or the editor that creates LRC file
+	Ve: version of program
+	offset: time offset
+		
+3. gstbuffer timestamp
+	starttime -- stoptime
+	stoptime = next starttime
+	
+	key point: how to indicate EOS? the last timestamp is total time.
+	
+4. Seek
+	Find correct in list	
+	
+5. sync 
+	No clock itself, pipeline use default systemclock, if need to sync with audio playback,
+	get clock from playback pipeline, and set it to lrc pipeline
+	
+6. Process arithmetic
+	1. Search for line 
+	2. Process line by line
+	
+	while(!eof)
+	{
+		str = AssembleLine();
+		ProcessStr(str);
+		if (valid)
+		{
+			store in list
+			change last buffer stoptime in list
+		}
+	}
+	
+	if (empty in list)
+	{
+		report error;
+	}
