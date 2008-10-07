@@ -54,7 +54,7 @@ GST_DEBUG_CATEGORY_STATIC (lrcsink_debug);
 #define GST_CAT_DEFAULT lrcsink_debug
 
 static GstStaticPadTemplate sinktemplate = GST_STATIC_PAD_TEMPLATE ("sink",
-    GST_PAD_SRC,
+    GST_PAD_SINK,
     GST_PAD_ALWAYS,
     GST_STATIC_CAPS ("text/lrc")
     );
@@ -63,10 +63,12 @@ static void gst_lrc_sink_base_init (GstLrcSinkClass * klass);
 static void gst_lrc_sink_class_init (GstLrcSinkClass * klass);
 static void gst_lrc_sink_init (GstLrcSink * lrc, GstLrcSinkClass * gclass);
 static void gst_lrc_sink_finalize (GObject * object);
-static GstFlowReturn gst_lrc_sink_chain (GstPad * pad, GstBuffer * buf);
 
 static GstStateChangeReturn gst_lrc_sink_change_state (GstElement * element,
     GstStateChange transition);
+
+static GstFlowReturn gst_lrc_sink_render (GstBaseSink * bsink,
+    GstBuffer * buffer);
 
 static GstElementClass *parent_class = NULL;
 
@@ -91,7 +93,7 @@ gst_lrc_sink_get_type (void)
     };
 
     lrc_sink_type =
-        g_type_register_static (GST_TYPE_ELEMENT,
+        g_type_register_static (GST_TYPE_BASE_SINK,
         "GstLrcSink", &lrc_sink_info, 0);
   }
 
@@ -114,20 +116,25 @@ gst_lrc_sink_base_init (GstLrcSinkClass * klass)
 static void
 gst_lrc_sink_class_init (GstLrcSinkClass * klass)
 {
-  GstElementClass *gstelement_class = GST_ELEMENT_CLASS (klass);
   GObjectClass *gobject_class = (GObjectClass *) klass;
+  GstElementClass *gstelement_class = GST_ELEMENT_CLASS (klass);
+  GstBaseSinkClass *gstbase_sink_class;
 
   GST_DEBUG_CATEGORY_INIT (lrcsink_debug, "lrcsink",
       0, "Sink for lrc files");
 
+  gstbase_sink_class = GST_BASE_SINK_CLASS (klass);
   parent_class = g_type_class_peek_parent (klass);
 
   gst_element_class_add_pad_template (gstelement_class,
       gst_static_pad_template_get (&sinktemplate));
-  
+
   gobject_class->finalize = gst_lrc_sink_finalize;
+  
   gstelement_class->change_state =
       GST_DEBUG_FUNCPTR (gst_lrc_sink_change_state);
+
+  gstbase_sink_class->render = GST_DEBUG_FUNCPTR (gst_lrc_sink_render);
 }
 
 static void
@@ -135,9 +142,10 @@ gst_lrc_sink_init (GstLrcSink * lrc, GstLrcSinkClass * gclass)
 {
   GstElementClass *element_klass = GST_ELEMENT_CLASS (gclass);
   GstPadTemplate *tmpl;
-  
-  lrc->sinkpad = gst_pad_new_from_static_template (&sinktemplate, "sink");
-  gst_element_add_pad (GST_ELEMENT (lrc), lrc->sinkpad);
+ 
+  GST_DEBUG("initialing"); 
+//  lrc->sinkpad = gst_pad_new_from_static_template (&sinktemplate, "sink");
+//  gst_element_add_pad (GST_ELEMENT (lrc), lrc->sinkpad);
 
 }
 
@@ -151,16 +159,11 @@ gst_lrc_sink_finalize (GObject * object)
   G_OBJECT_CLASS (parent_class)->finalize (object);
 }
 
-static GstFlowReturn
-gst_lrc_sink_chain (GstPad * pad, GstBuffer * buf)
+static GstFlowReturn gst_lrc_sink_render (GstBaseSink * bsink, GstBuffer * buffer)
 {
-  GstFlowReturn res;
-  GstLrcSink *lrc = GST_LRC_SINK (GST_PAD_PARENT (pad));
-
-  GST_DEBUG ("Store %d bytes ", GST_BUFFER_SIZE (buf));
-
-  gst_buffer_unref (buf);
-  return res;
+  GST_DEBUG("lyric: %s .", GST_BUFFER_DATA(buffer));
+  
+  return GST_FLOW_OK;
 }
 
 static GstStateChangeReturn

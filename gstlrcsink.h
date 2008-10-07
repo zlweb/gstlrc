@@ -21,6 +21,7 @@
 #define __GST_LRC_SINK_H__
 
 #include <gst/gst.h>
+#include <gst/base/gstbasesink.h>
 
 G_BEGIN_DECLS
 
@@ -38,7 +39,7 @@ G_BEGIN_DECLS
 #define LRC_BLOCK_SIZE 50
 
 typedef struct _GstLrcSink {
-  GstElement     parent;
+  GstBaseSink     parent;
 
   /* pads */
   GstPad        *sinkpad;
@@ -46,7 +47,7 @@ typedef struct _GstLrcSink {
 } GstLrcSink;
 
 typedef struct _GstLrcSinkClass {
-  GstElementClass parent_class;
+  GstBaseSinkClass parent_class;
 } GstLrcSinkClass;
 
 GType           gst_lrc_sink_get_type (void);

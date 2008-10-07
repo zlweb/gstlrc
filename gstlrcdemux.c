@@ -217,8 +217,9 @@ gst_lrc_parse_line(GstLrcDemux *lrc, const gchar* line)
       buf = gst_buffer_new_and_alloc(strlen(lyric)+1);
       memset(GST_BUFFER_DATA(buf), 0, strlen(lyric)+1);
       strcpy(GST_BUFFER_DATA(buf), lyric);
-      timestamp = (min * 60 + sec )* GST_SECOND + hsec * 10 * GST_MSECOND;
+      timestamp = (min * 60 + sec )* GST_SECOND + (hsec * 10 * GST_MSECOND);
       GST_BUFFER_TIMESTAMP(buf) = timestamp;
+      GST_BUFFER_DURATION(buf) = GST_SECOND;
       lrc->lyricList = g_list_append(lrc->lyricList, buf);
       GST_DEBUG("append one");
     }
@@ -337,9 +338,12 @@ gst_lrc_demux_loop (GstPad * pad)
   {
     buf = (GstBuffer *) lrc->lyricList->data;
     if (buf)
+    {
+      GST_DEBUG("push data buf=%x", buf);
       res = gst_pad_push (lrc->srcpad, buf);
+    }
     lrc->lyricList = g_list_next(lrc->lyricList);
-    GST_DEBUG("push data buf=%x", buf);
+
     if (!lrc->lyricList)
       gst_pad_push_event (lrc->srcpad, gst_event_new_eos ());
   }
